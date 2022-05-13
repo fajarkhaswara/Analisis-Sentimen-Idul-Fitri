@@ -1,0 +1,43 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics import confusion_matrix, accuracy_score
+
+data = pd.read_csv("C:\\Users\\fkhas\\Documents\\Projects\\Twitter\\SA\\analisissentimen\\Datasets\\Sentiment Total.csv")
+
+data.head(10)
+
+def preprocess_data(data):
+    # Remove package name as it's not relevant
+    data = data.drop('score', axis=1)
+    
+    # Convert text to lowercase
+    data['text'] = data['text'].str.strip().str.lower()
+    return data
+  
+data = preprocess_data(data)
+
+# Split into training and testing data
+x = data['text']
+y = data['class']
+
+cv = CountVectorizer()
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, stratify = y, test_size = 0.10, random_state=42)
+
+x_train = cv.fit_transform(x_train).toarray()
+x_test = cv.transform(x_test).toarray()
+
+from sklearn.svm import SVC
+
+model = SVC()
+model.fit(x_train, y_train)
+
+# score test data test
+model.score(x_test, y_test)
+
+# score for data training
+model.score(x_train,y_train)
+
+from jcopml.plot import plot_classification_report
+plot_classification_report(x_train,y_train,x_test,y_test,model, report = True)
