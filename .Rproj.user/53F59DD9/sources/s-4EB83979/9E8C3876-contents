@@ -11,7 +11,7 @@ library(rtweet)
 
 # collect twitter data
 df <- search_tweets(
-  "idul fitri", n = 5000, include_rts = TRUE, lang = "id", type = "recent"
+  "silaturahmi", n = 5000, include_rts = TRUE, lang = "id", type = "recent"
 )
 
 #flaten the tweets
@@ -19,7 +19,7 @@ flatenned_tweets <- data.frame(lapply(df, as.character), stringsAsFactors = FALS
 
 #save raw twitter data
 write.csv(x = flatenned_tweets,
-          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Idul Fitri Mentah.csv',
+          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Silaturahmi Mentah.csv',
           row.names = FALSE)
 
 # remove duplicate and select single column for only text
@@ -27,11 +27,11 @@ tweets.df = df %>% distinct(text, .keep_all = FALSE)
 
 #save twitter data
 write.csv(x = tweets.df,
-          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Idul Fitri.csv',
+          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Silaturahmi.csv',
           row.names = FALSE)
 
 # Load Data from Computer
-tweets.df = read.csv(file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Idul Fitri.csv',
+tweets.df = read.csv(file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Data Silaturahmi.csv',
                      header = TRUE,
                      sep = ',')
 
@@ -116,56 +116,6 @@ results$class = as.factor(ifelse(results$score < 0, 'Negative',
 
 # ===== SAVE DATA RESULTS
 write.csv(x = results,
-          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Sentiment Idul Fitri.csv',
+          file = '~/Projects/Twitter/SA/analisissentimen/Datasets/Sentiment Silaturahmi.csv',
           row.names = FALSE)
-
-# ===== FILTERING STOPWORDS
-rm.stopword = VCorpus(VectorSource(results$text))
-# Using edited stopword list
-stopwords.id = readLines('~/Projects/Twitter/SA/analisissentimen/Helpers/Data Helper/stopwords-id.txt')
-rm.stopword = tm_map(rm.stopword, removeWords, stopwords.id)
-# Using manually added stopword list
-stopwords.id = readLines('~/Projects/Twitter/SA/analisissentimen/Helpers/Data Helper/stopwords-manual.txt')
-rm.stopword = tm_map(rm.stopword, removeWords, stopwords.id)
-# Check the final result
-inspect(rm.stopword[[2]])
-# Eliminate extra white spaces
-rm.stopword = tm_map(rm.stopword, stripWhitespace)
-
-# TOKENIZATION - FREQUENT WORDS
-tdm = TermDocumentMatrix(rm.stopword, 
-                         control = list(wordLengths = c(1, Inf)))
-freq.terms = findFreqTerms(tdm, 
-                           lowfreq = 20)
-freq.terms[1:50]
-
-
-# ===== WORDCLOUD
-wordcloud(rm.stopword,
-          max.words = 100,
-          min.freq = 25,
-          random.order = FALSE,
-          colors = brewer.pal(8, "Dark2"))
-
-# ===== BARPLOT OF FREQUENT WORDS
-term.freq = rowSums(as.matrix(tdm))
-term.freq = subset(term.freq, term.freq >= 100)
-df = data.frame(term = names(term.freq), 
-                freq = term.freq)
-ggplot(df)+ 
-  geom_bar(aes(x = reorder(term,
-                           freq),
-               y = freq),
-           stat = 'identity',
-           fill = I('blue'),
-           alpha = 0.6)+
-  labs(title = 'Frekuensi Kata',
-       subtitle = 'Takbiran',
-       caption = 'Twitter Crawling 1 Mei 2022')+
-  xlab('Kata')+ 
-  ylab('Jumlah')+
-  coord_flip()+
-  theme(axis.text = element_text(size = 9))+
-  theme_bw()
-
 
